@@ -70,6 +70,14 @@ if [ "$action" == 'create' ]
 			index index.php index.html index.htm;
 			server_name $domain;
 
+			location / {
+			    try_files \$uri \$uri/ /index.php?\$args;
+			}
+
+			location ~ /(\.|wp-config.php|readme.html|license.txt|licencia.txt) {
+			    return 404;
+			}
+
 			# serve static files directly
 			location ~* \.(jpg|jpeg|gif|css|png|js|ico|html)$ {
 				access_log off;
@@ -77,9 +85,9 @@ if [ "$action" == 'create' ]
 			}
 
 			# removes trailing slashes (prevents SEO duplicate content issues)
-			if (!-d \$request_filename) {
-				rewrite ^/(.+)/\$ /\$1 permanent;
-			}
+			#if (!-d \$request_filename) {
+			#	rewrite ^/(.+)/\$ /\$1 permanent;
+			#}
 
 			# unless the request is for a valid file (image, js, css, etc.), send to bootstrap
 			if (!-e \$request_filename) {
@@ -88,21 +96,21 @@ if [ "$action" == 'create' ]
 			}
 
 			# removes trailing 'index' from all controllers
-			if (\$request_uri ~* index/?\$) {
-				rewrite ^/(.*)/index/?\$ /\$1 permanent;
-			}
+			#if (\$request_uri ~* index/?\$) {
+			#	rewrite ^/(.*)/index/?\$ /\$1 permanent;
+			#}
 
 			# catch all
 			error_page 404 /index.php;
 
 			location ~ \.php$ {
-                try_files \$uri =404;
+				try_files \$uri =404;
 				fastcgi_split_path_info ^(.+\.php)(/.+)\$;
 				fastcgi_pass unix:/var/run/php5-fpm.sock;
 				fastcgi_index index.php;
-                fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+				fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 				include fastcgi_params;
-                fastcgi_read_timeout 3000;
+				fastcgi_read_timeout 3000;
 			}
 
 			location ~ /\.ht {
